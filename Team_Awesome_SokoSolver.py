@@ -35,17 +35,17 @@ def find_player_moves((pi,pj),(bi,bj),level):
     
     moves = []
 
-    if level[pi][pj+1] == ' ':         #steps right
-        moves.append((pi,pj+1))
+    if level[pi][pj+1] == ' ' and not(pi == bi and pj+1 == bj):         #steps right
+        moves.append((box_pos,(pi,pj+1)))
 
-    if level[pi][pj-1] == ' ':          #steps left
-        moves.append((pi,pj-1))
+    if level[pi][pj-1] == ' ' and not(pi == bi and pj-1 == bj):           #steps left
+        moves.append((box_pos,(pi,pj-1)))
 
-    if level[pi-1][pj] == ' ':          #steps up
-        moves.append((pi-1,pj))
+    if level[pi-1][pj] == ' ' and not(pi-1 == bi and pj == bj):          #steps up
+        moves.append((box_pos,(pi-1,pj))) 
 
-    if level[pi+1][pj] == ' ':          #steps down
-        moves.append((pi+1,pj))
+    if level[pi+1][pj] == ' ' and not(pi+1 == bi and pj == bj):           #steps down
+        moves.append((box_pos,(pi+1,pj)))
 
     return moves
 
@@ -56,21 +56,15 @@ def find_box_pushes((bi,bj),level):
     if level[box_pos[0]][box_pos[1]] == '#':
         return None
     
-    if level[bi][bj+1] == ' ':          #steps right
-        if level[bi][bj-1] == ' ':      #can it go left as well?
-            legal_moves[(bi,bj+1),box_pos] = (bi,bj+1)
+    if level[bi][bj+1] == ' ':          #is there space to the right?
+        if level[bi][bj-1] == ' ':      #is there also space to the left?
+            legal_moves[box_pos,(bi,bj-1)] = ((bi,bj+1),box_pos)
+            legal_moves[box_pos,(bi,bj+1)] = ((bi,bj-1),box_pos)
 
-    if level[bi][pj-1] == ' ':          #steps left
-        if level[bi][bj+1] == ' ':      #can it go right as well?
-            legal_moves[(bi,bj-1),box_pos] = (bi,bj-1)
-
-    if level[bi-1][bj] == ' ':          #steps up
-        if level[bi+1][bj] == ' ':      #can it go down as well?
-            legal_moves[(bi+1,bj),box_pos] = (bi+1,bj)
-
-    if level[bi+1][bj] == ' ':          #steps down
-        if level[bi-1][bj] == ' ':      #can it go up as well?
-            legal_moves[(bi-1,bj),box_pos] = (bi-1,bj)
+    if level[bi-1][bj] == ' ':          #is there space above?
+        if level[bi+1][bj] == ' ':      #is there also space below?
+            legal_moves[box_pos,(bi-1,bj)] = ((bi+1,bj),box_pos)
+            legal_moves[box_pos,(bi+1,bj)] = ((bi-1,bj),box_pos)
 
     print legal_moves
     return legal_moves
@@ -114,4 +108,6 @@ for bi in range(len(level)):
         pushes = find_box_pushes((bi,bj),level)
         if pushes != None:
             for state in pushes.keys():
-                graph[state].update(pushes[state])
+                print pushes[state]
+                graph[state].update([pushes[state]])
+                print graph[state]
