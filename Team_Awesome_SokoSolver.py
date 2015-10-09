@@ -21,16 +21,20 @@ def find_location_of(thing, level_lines):
         for j in range(len(level_lines[1])):
             if level_lines[i][j] == thing:
                 print"found %s" % thing, "in (%i,%i)" % (i,j)
-                if thing != '$':
-                    s_level_lines[i]=s_level_lines[i].replace(thing,' ')
+                s_level_lines[i]=s_level_lines[i].replace(thing,' ')
                 result.append((i,j))
     return result
 
-def replace_box_with_wall(pbox, current_box):
-    for x in range(len(pbox)):
-        if x != current_box:
-            s_level_lines[x[0]]=s_level_lines[x[0]].replace('$','#')
-            
+def replace_box_with_wall(pbox, current_box, level_lines):
+
+    for x in pbox:
+        for i in range(len(level_lines)):
+            for j in range(len(level_lines[1])):
+                if (i == x[0]) and (j == x[1]) and (x != current_box):
+                    text = s_level_lines[i]
+                    text=text[:(x[1])] + '#' + text[(1+x[1]):]
+                    s_level_lines[i] = text
+                    print("Box replaced with wall at (%s,%s)" % (str(x[0]), str(x[1])))
 
 def find_player_moves((bi,bj),(pi,pj),level):
     player_pos = (pi,pj)
@@ -61,7 +65,6 @@ def find_player_moves((bi,bj),(pi,pj),level):
         #print moves
         return moves
 
-
 def find_box_pushes((bi,bj),level):
     box_pos = (bi,bj)
     legal_moves = {}
@@ -83,8 +86,6 @@ def find_box_pushes((bi,bj),level):
         #print legal_moves
         return legal_moves
 
-level_lines = sokolevel.splitlines()
-
 def bfs_paths(graph, start, goal):
     stack = [(start, [start])]
     next = ''
@@ -95,28 +96,28 @@ def bfs_paths(graph, start, goal):
         for next in graph[vertex] - set(path):
             if next == goal:
                 return path + [next]
-                #print next
+                print next
             else:
                 stack.append((next, path + [next]))
-                #print next
-                
+                print next
+
+level_lines = sokolevel.splitlines()
+
 #create copy to work on
 s_level_lines = []
 for line in level_lines:
     s_level_lines.append(line)
 
-
+#Locating and removing Goals, Boxes and the player
 pgoal = find_location_of('.', level_lines)
 pbox = find_location_of('$', level_lines)
-
-#replace_box_with_wall(pbox,(4,4))
-
-currentBoxPos = pbox
-
 pplayer = find_location_of('@', level_lines)
 
 level = s_level_lines
-#print level
+one_path_at_a_time = []
+
+for coords in range(len(pbox)):
+    print()
 
 
 #graph is a dictionary mapping states to a set of states. State format is
@@ -144,20 +145,28 @@ for bi in range(len(level)):
                 graph[state].update([pushes[state]])
                 #print graph[state]
 
-print pplayer
-print pgoal
-print pbox
+#print pplayer
+#print pgoal
+#print pbox
+
+#print level
+#replace_box_with_wall(pbox,(4,4),level_lines)
+#print level
+
+#print graph
 
 #Executes depth-first search
-for i in range(len(pgoal)):
-    path = bfs_paths(graph, (pbox[i],pplayer[0]), (pgoal[i],pplayer[0]))
-    print path
 
-##path = dfs_paths(graph, (pbox[1],pplayer[0]), (pgoal[0],pplayer[0]))
-##print path
-##path = dfs_paths(graph, (pbox[0],pplayer[0]), (pgoal[1],pplayer[0]))
-##print path
-##path = dfs_paths(graph, (pbox[3],pplayer[0]), (pgoal[3],pplayer[0]))
-##print path
-##path = dfs_paths(graph, (pbox[2],pplayer[0]), (pgoal[2],pplayer[0]))
-##print path
+complete_path =[]
+
+for i in range(len(pgoal)):
+
+    path = bfs_paths(graph, (pbox[i],pplayer[0]), (pgoal[i],pplayer[0]))
+    complete_path.append(path)
+    #print path
+
+for x in range(len(complete_path)):
+    print ("Path: " + str(complete_path[x]))
+
+    #path = bfs_paths(graph, (pbox[1],pplayer[0]), (pgoal[i],pplayer[0]))
+    #print ("Path: " + str(path))
